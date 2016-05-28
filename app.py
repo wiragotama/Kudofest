@@ -12,7 +12,10 @@ from VideoSimilarityBasedRecommendation import VideoBasedRecommendation
 app = Flask(__name__)
 api = Api(app)
 
-
+film_rec = VideoBasedRecommendation()
+profile_rec = ProfileBasedRecommendation()
+genre_rec = GenreBasedRecommendation()
+behaviour_rec = BehaviourBasedRecommendation()
 @app.route("/r", methods=['GET'])
 def index():
     with open("input.txt") as f:
@@ -22,12 +25,6 @@ def index():
     user_id2 = copy.copy(user_id1)
     user_id3 = copy.copy(user_id1)
     user_id4 = copy.copy(user_id1)
-
-    film_rec = VideoBasedRecommendation()
-    profile_rec = ProfileBasedRecommendation()
-    genre_rec = GenreBasedRecommendation()
-    behaviour_rec = BehaviourBasedRecommendation()
-
 
     viewed = film_rec.get_viewed_items(user_id1)
     out = film_rec.recommend(user_id1, viewed)  # film
