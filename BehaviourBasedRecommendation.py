@@ -22,7 +22,31 @@ class BehaviourBasedRecommendation:
         self.engine= sa.create_engine(engine_statement,)
         self.user_behaviours = pd.read_sql("user_behaviours", self.engine).as_matrix()
         self.ratings = pd.read_sql("ratings", self.engine)
+        print("Behaviour Ctor")
         return
+
+    def quick_sort(self, left, right, candidate):
+        left_row = left;
+        right_row = right;
+        pivot = candidate[(left_row + right_row) // 2][1]
+
+        while left_row <= right_row:
+            while (candidate[left_row][1] > pivot):
+                left_row += 1
+            while (candidate[right_row][1] < pivot):
+                right_row -= 1
+            if (left_row <= right_row):
+                temp = candidate[left_row]
+                candidate[left_row] = candidate[right_row]
+                candidate[right_row] = temp
+                left_row += 1
+                right_row -= 1
+        # endwhile
+        if (left_row < right):
+            BehaviourBasedRecommendation.quick_sort(self, left_row, right, candidate)
+        if (left < right_row):
+            BehaviourBasedRecommendation.quick_sort(self, left, right_row, candidate)
+
 
     def recommend(self, userId, viewed):
         """
@@ -33,13 +57,8 @@ class BehaviourBasedRecommendation:
         K = 5
         neighbors = BehaviourBasedRecommendation.__neighbor_scoring__(self, userId)
 
-        # sort neighbor scores
-        for i in range(len(neighbors)):
-            for j in range(i, len(neighbors)):
-                if (neighbors[j][1] > neighbors[i][1]):
-                    temp = neighbors[j]
-                    neighbors[j] = neighbors[i]
-                    neighbors[i] = temp
+        # sort
+        BehaviourBasedRecommendation.quick_sort(self, 0, len(neighbors)-1, neighbors)
 
         # get K nearest neighbor
         out = []
@@ -127,6 +146,6 @@ class BehaviourBasedRecommendation:
 
 
 # Main program
-recommender = BehaviourBasedRecommendation()
-neighbors = recommender.recommend(20, [])
-print(neighbors)
+# recommender = BehaviourBasedRecommendation()
+# neighbors = recommender.recommend(20, [])
+# print(neighbors)

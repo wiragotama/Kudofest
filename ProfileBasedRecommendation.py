@@ -2,8 +2,10 @@ import sqlalchemy as sa
 import pandas as pd
 import numpy as np
 import random
+import copy
 from pandas import DataFrame
 from sqlalchemy import *
+from VideoSimilarityBasedRecommendation import VideoBasedRecommendation
 
 class ProfileBasedRecommendation:
     dbName = "kudofest"
@@ -19,9 +21,32 @@ class ProfileBasedRecommendation:
         """
         engine_statement = "mysql+pymysql://" + self.usr + ":" + self.password + "@" + self.hostname + "/" + self.dbName
         self.engine= sa.create_engine(engine_statement,)
-        self.users = pd.read_sql("users", self.engine).as_matrix()
+        self.users = pd.read_sql("users_profiles", self.engine).as_matrix()
         self.ratings = pd.read_sql("ratings", self.engine)
+        print("Profile Ctor")
         return
+
+    def quick_sort(self, left, right, candidate):
+        left_row = left;
+        right_row = right;
+        pivot = candidate[(left_row + right_row) // 2][1]
+
+        while left_row <= right_row:
+            while (candidate[left_row][1] > pivot):
+                left_row += 1
+            while (candidate[right_row][1] < pivot):
+                right_row -= 1
+            if (left_row <= right_row):
+                temp = candidate[left_row]
+                candidate[left_row] = candidate[right_row]
+                candidate[right_row] = temp
+                left_row += 1
+                right_row -= 1
+        # endwhile
+        if (left_row < right):
+            ProfileBasedRecommendation.quick_sort(self, left_row, right, candidate)
+        if (left < right_row):
+            ProfileBasedRecommendation.quick_sort(self, left, right_row, candidate)
 
     def __neighbor_scoring__(self, userId):
         """
@@ -55,12 +80,8 @@ class ProfileBasedRecommendation:
         neighbors = ProfileBasedRecommendation.__neighbor_scoring__(self, userId)
 
         #sort
-        for i in range(len(neighbors)):
-            for j in range (i, len(neighbors)):
-                if (neighbors[j][1] > neighbors[i][1]):
-                    temp = neighbors[j]
-                    neighbors[j] = neighbors[i]
-                    neighbors[i] = temp
+        ProfileBasedRecommendation.quick_sort(self, 0, len(neighbors)-1, neighbors)
+        # print("Sorted")
 
         candidate = []
         i = 0;
@@ -72,11 +93,13 @@ class ProfileBasedRecommendation:
             prev = neighbors[i][1]
             i+=1
         random.shuffle(candidate)
+        # print("Shuffled")
 
         # get K nearest neighbor
         out = []
         for i in range (0,K):
             out.append(candidate[i])
+        # print("Candidate")
         return ProfileBasedRecommendation.get_neighbor_movie(self, out, viewed)
 
     def __check_similarity__(self, user1, user2):
@@ -106,9 +129,11 @@ class ProfileBasedRecommendation:
                 if (not (rated_movies[j][1] in movies_id) and not(rated_movies[j][1] in viewed)):
                     movies_id.append(rated_movies[j][1])
         random.shuffle(movies_id)
+        # print("Neighbor")
         return movies_id[0:10]
 
 # Main program
-recommender = ProfileBasedRecommendation()
-neighbors = recommender.recommend(25, [])
-print(neighbors)
+# viewed = VideoBasedRecommendation.get_viewed_items(25)
+# recommender = ProfileBasedRecommendation()
+# neighbors = recommender.recommend(25, [])
+# print(neighbors)
