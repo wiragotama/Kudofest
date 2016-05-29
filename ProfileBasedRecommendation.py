@@ -26,6 +26,9 @@ class ProfileBasedRecommendation:
         print("Profile Ctor")
         return
 
+    def update(self):
+        self.users = pd.read_sql("users_profiles", self.engine).as_matrix()
+
     def quick_sort(self, left, right, candidate):
         left_row = left;
         right_row = right;
@@ -97,7 +100,7 @@ class ProfileBasedRecommendation:
 
         # get K nearest neighbor
         out = []
-        for i in range (0,K):
+        for i in range (0, min(K, len(candidate))):
             out.append(candidate[i])
         # print("Candidate")
         return ProfileBasedRecommendation.get_neighbor_movie(self, out, viewed)

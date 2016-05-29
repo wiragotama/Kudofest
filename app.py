@@ -16,6 +16,21 @@ film_rec = VideoBasedRecommendation()
 profile_rec = ProfileBasedRecommendation()
 genre_rec = GenreBasedRecommendation()
 behaviour_rec = BehaviourBasedRecommendation()
+@app.route("/u", methods=['GET'])
+def update():
+    global film_rec
+    global profile_rec
+    global genre_rec
+    global behaviour_rec
+    profile_rec.update()
+    behaviour_rec.update()
+    genre_rec.update()
+    key = []
+    for i in range(1):
+        key.append(i)
+    res = {str(key[i]): str(1) for i in range(1)}
+    return json.dumps(res), status.HTTP_200_OK
+
 @app.route("/r", methods=['GET'])
 def index():
     with open("input.txt") as f:

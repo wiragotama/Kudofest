@@ -25,6 +25,9 @@ class BehaviourBasedRecommendation:
         print("Behaviour Ctor")
         return
 
+    def update(self):
+        self.user_behaviours = pd.read_sql("user_behaviours", self.engine).as_matrix()
+
     def quick_sort(self, left, right, candidate):
         left_row = left;
         right_row = right;
@@ -62,7 +65,7 @@ class BehaviourBasedRecommendation:
 
         # get K nearest neighbor
         out = []
-        for i in range(0, K):
+        for i in range(0, min(K, len(neighbors))):
             out.append(neighbors[i][0])
         return BehaviourBasedRecommendation.get_neighbor_movie(self, out, viewed)
 
